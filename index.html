@@ -2,89 +2,139 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M. Adriyansah - IT Support Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>M. Adriyansah - IT Support Portfolio Game</title>
     <style>
+        :root {
+            --primary-color: #2ecc71;
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+        }
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             overflow: hidden;
+            touch-action: none; /* Prevent scrolling on mobile taps */
         }
         #game-container {
             position: relative;
+            width: 95%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            box-shadow: 0 0 30px rgba(46, 204, 113, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #333;
         }
         canvas {
-            background-color: #2c3e50;
-            border: 4px solid #34495e;
-            box-shadow: 0 0 20px rgba(0,255,0,0.2);
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
         }
+        /* Gaya Modal/Pop-up */
         #ui-modal {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.9);
-            border: 2px solid #2ecc71;
-            padding: 20px;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 8px;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: rgba(20, 20, 20, 0.95);
+            border: 2px solid var(--primary-color);
+            padding: 25px;
+            width: 85%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 15px;
             display: none;
-            box-shadow: 0 0 15px #2ecc71;
+            box-shadow: 0 0 25px rgba(46, 204, 113, 0.5);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            z-index: 100;
         }
         #ui-modal.active {
             display: block;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
         #modal-content {
-            margin-bottom: 20px;
-            line-height: 1.5;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 15px;
         }
         #modal-content h2 {
-            color: #2ecc71;
+            color: var(--primary-color);
             margin-top: 0;
-            border-bottom: 1px solid #2ecc71;
-            padding-bottom: 5px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            font-size: 1.5rem;
         }
-        button {
-            background-color: #2ecc71;
+        #modal-content ul { padding-left: 20px; }
+        #modal-content li { margin-bottom: 8px; }
+        /* Tombol Tutup */
+        .close-btn {
+            background-color: var(--primary-color);
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-weight: bold;
+            font-size: 16px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 8px;
+            width: 100%;
+            transition: background-color 0.2s;
         }
-        button:hover {
-            background-color: #27ae60;
-        }
+        .close-btn:hover { background-color: #27ae60; }
+        
+        /* Instruksi Bawah */
         #instructions {
             margin-top: 15px;
             text-align: center;
-            color: #bdc3c7;
+            color: #aaa;
+            font-size: 0.9rem;
+            padding: 0 10px;
         }
-        .highlight { color: #2ecc71; }
+        .highlight { color: var(--primary-color); font-weight: bold; }
+        .wa-link { 
+            color: #25D366; 
+            text-decoration: none; 
+            font-weight: bold; 
+            border: 1px solid #25D366;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        .wa-link:hover { background-color: rgba(37, 211, 102, 0.1); }
+
+        /* Mobile adjustment */
+        @media (max-width: 600px) {
+            #modal-content { font-size: 14px; }
+            #modal-content h2 { font-size: 1.3rem; }
+        }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <canvas id="gameCanvas" width="800" height="500"></canvas>
+        <canvas id="gameCanvas"></canvas>
         <div id="ui-modal">
             <div id="modal-content"></div>
-            <button onclick="closeModal()">Tutup (ESC)</button>
+            <button class="close-btn" onclick="closeModal()">Tutup Pembahasan</button>
         </div>
     </div>
     <div id="instructions">
-        🎮 <b>Kontrol:</b> W,A,S,D atau Panah untuk bergerak. <br>
-        Buka objek (Papan, Peti, Buku, Surat) dengan menabraknya lalu tekan <b>SPASI</b>.
+        <span id="pc-instruct">💻 <b>PC:</b> Gunakan W,A,S,D / Panah untuk bergerak. Spasi untuk interaksi.</span>
+        <span id="mobile-instruct" style="display:none;">📱 <b>HP:</b> Tap/Sentuh layar untuk bergerak ke lokasi tersebut.</span>
     </div>
 
     <script>
@@ -92,146 +142,214 @@
         const ctx = canvas.getContext('2d');
         const modal = document.getElementById('ui-modal');
         const modalContent = document.getElementById('modal-content');
+        const pcInstruct = document.getElementById('pc-instruct');
+        const mobileInstruct = document.getElementById('mobile-instruct');
 
-        // Data CV Adriyansah
+        // Detect Mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            pcInstruct.style.display = 'none';
+            mobileInstruct.style.display = 'block';
+        }
+
+        // Set canvas resolution internally
+        const baseWidth = 800;
+        const baseHeight = 450;
+        canvas.width = baseWidth;
+        canvas.height = baseHeight;
+
+        // --- DATA CV (Updated with WA Link) ---
         const cvData = {
-            profile: `<h2>Profil & Keahlian 🛡️</h2>
-                      <p>Saya <b>M. Adriyansah</b>, Penggiat IT & AI. Mahasiswa tingkat akhir Teknik Informatika dengan rekam jejak solid di bidang IT Support, manajemen OS, dan pemeliharaan jaringan.</p>
+            profile: `<h2>📋 Profil & Keahlian IT</h2>
+                      <p>Hai, Saya <b>M. Adriyansah</b>. 🧙‍♂️<br>Mahasiswa tingkat akhir Teknik Informatika yang fokus pada solusi praktis IT Support dan manajemen sistem.</p>
                       <p><span class="highlight">Keahlian Utama:</span></p>
                       <ul>
-                        <li>OS & Server: Windows, Linux (Ubuntu, Debian), Active Directory</li>
-                        <li>Networking: LAN/WLAN, Troubleshooting Hardware/Software</li>
-                        <li>Digital Mkt: OBS Live Streaming, WordPress CMS</li>
+                        <li>🛠️ <b>OS & Server:</b> Windows (Client/Server), Linux (Ubuntu/Debian), Active Directory dasar.</li>
+                        <li>🌐 <b>Networking:</b> Konfigurasi LAN/WLAN, Troubleshooting konektivitas TCP/IP.</li>
+                        <li>💻 <b>Support:</b> Hardware assembly/repair, instalasi software, penanganan tiket user.</li>
                       </ul>`,
-            experience: `<h2>Pengalaman Kerja ⚔️</h2>
+            experience: `<h2>💼 Pengalaman Kerja</h2>
                          <p><span class="highlight">PT. Raharja Sinergi Komunikasi</span><br>
                          <i>Network & Helpdesk Technician (Okt 2026 - Des 2026)</i><br>
-                         - Technical support & troubleshooting hardware/software.<br>
-                         - Mengedukasi user untuk langkah preventif IT.</p>
+                         Developing...</p>
                          <p><span class="highlight">Digitech University</span><br>
                          <i>Asisten IT Support (Jul 2021 - Agu 2022)</i><br>
-                         - Maintenance infrastruktur IT kampus.<br>
-                         - Troubleshooting harian perangkat desktop & optimasi performa.</p>`,
-            education: `<h2>Pendidikan & Bahasa 📜</h2>
-                        <p><span class="highlight">Digitech University</span><br>
-                        S1 Teknik Informatika (2021 - Sekarang)</p>
-                        <p><span class="highlight">SMKN 1 Katapang</span><br>
-                        Teknik Komputer & Jaringan (2016 - 2019)</p>
-                        <p><span class="highlight">Bahasa:</span> Indonesia (Native), Jepang (N4), Inggris (Dasar), Jerman (Dasar)</p>`,
-            contact: `<h2>Kontak ✉️</h2>
-                      <p>Tertarik untuk bekerja sama atau memiliki lowongan IT Support?</p>
-                      <p>📍 Lokasi: Bandung<br>
-                      📧 Email: aldimadara2@gmail.com<br>
-                      📱 Telepon: +62-838-1707-2264</p>`
+                         👉 Melakukan maintenance rutin lab komputer dan infrastruktur jaringan kampus.<br>
+                         👉 Troubleshooting cepat untuk masalah desktop dosen dan mahasiswa agar KBM lancar.</p>`,
+            education: `<h2>🎓 Pendidikan & Bahasa</h2>
+                        <p><b>S1 Teknik Informatika</b> - Digitech University<br>(2021 - Sekarang)</p>
+                        <p><b>Teknik Komputer & Jaringan</b> - SMKN 1 Katapang<br>(2016 - 2019)</p>
+                        <hr style="border-color:#333">
+                        <p>🌐 <b>Bahasa:</b><br>Indonesia (Native), Jepang (N4 - Conversational), Inggris (Pasif).</p>`,
+            // UPDATE: LINK WHATSAPP DITAMBAHKAN DI SINI
+            contact: `<h2>📮 Kontak & Rekrutmen</h2>
+                      <p>Sedang mencari IT Support yang siap kerja? Mari terhubung!</p>
+                      <p>📍 <b>Lokasi:</b> Bandung, Jawa Barat<br>
+                      📧 <b>Email:</b> aldimadara2@gmail.com<br>
+                      <br>
+                      📱 <b>WhatsApp (Fast Response):</b><br>
+                      <a href="https://wa.me/6283817072264?text=Halo%20Adriyansah,%20saya%20melihat%20portofolio%20game%20Anda." target="_blank" class="wa-link">
+                        Chat ke +62-838-1707-2264 💬
+                      </a>
+                      </p>`
         };
 
-        // Player Setup
+        // --- GAME STATE ---
         const player = {
-            x: 400, y: 250, size: 30, speed: 4, color: '#3498db',
-            dx: 0, dy: 0
+            x: baseWidth / 2, y: baseHeight / 2, size: 40, speed: 5, emoji: '🧙‍♂️',
+            targetX: null, targetY: null // For tap-to-move functionality
         };
 
-        // Interactable Objects
         const objects = [
-            { id: 'profile', x: 150, y: 100, size: 40, color: '#e67e22', label: 'Papan Info', text: cvData.profile },
-            { id: 'experience', x: 600, y: 150, size: 40, color: '#f1c40f', label: 'Peti Kerja', text: cvData.experience },
-            { id: 'education', x: 200, y: 350, size: 40, color: '#9b59b6', label: 'Buku Ilmu', text: cvData.education },
-            { id: 'contact', x: 650, y: 350, size: 40, color: '#e74c3c', label: 'Kotak Surat', text: cvData.contact }
+            { id: 'profile', x: 100, y: 80, size: 50, emoji: '📋', label: 'Profil', text: cvData.profile },
+            { id: 'experience', x: 650, y: 100, size: 50, emoji: '💼', label: 'Pengalaman', text: cvData.experience },
+            { id: 'education', x: 150, y: 350, size: 50, emoji: '🎓', label: 'Pendidikan', text: cvData.education },
+            { id: 'contact', x: 600, y: 350, size: 50, emoji: '📮', label: 'Kontak/WA', text: cvData.contact }
         ];
 
         let keys = {};
         let isModalOpen = false;
         let currentInteractable = null;
 
-        // Input Listeners
+        // --- INPUT HANDLERS ---
+        // Keyboard (PC)
         window.addEventListener('keydown', (e) => {
+            if(isModalOpen && e.key === 'Escape') closeModal();
+            if(isModalOpen) return;
             keys[e.key.toLowerCase()] = true;
-            if (e.key === ' ' && currentInteractable && !isModalOpen) {
-                openModal(currentInteractable.text);
-            }
-            if (e.key === 'Escape' && isModalOpen) {
-                closeModal();
-            }
+            if (e.key === ' ' && currentInteractable) openModal(currentInteractable.text);
+        });
+        window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+
+        // Touch/Click (Mobile & PC Mouse)
+        canvas.addEventListener('pointerdown', (e) => {
+            if(isModalOpen) return;
+            // Get correct coordinates based on canvas scaling
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            player.targetX = (e.clientX - rect.left) * scaleX - player.size/2;
+            player.targetY = (e.clientY - rect.top) * scaleY - player.size/2;
+            // Reset keyboard keys if tapping
+            keys = {}; 
         });
 
-        window.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
-
+        // --- GAME LOGIC ---
         function openModal(content) {
             modalContent.innerHTML = content;
             modal.classList.add('active');
             isModalOpen = true;
+            player.targetX = null; // Stop movement
+            player.targetY = null;
         }
 
         function closeModal() {
             modal.classList.remove('active');
             isModalOpen = false;
-            keys[' '] = false; // reset space key
+            keys[' '] = false;
         }
 
-        function checkCollision(rect1, rect2) {
-            return (rect1.x < rect2.x + rect2.size &&
-                    rect1.x + rect1.size > rect2.x &&
-                    rect1.y < rect2.y + rect2.size &&
-                    rect1.y + rect1.size > rect2.y);
+        function checkCollision(rect1, rect2, buffer = 0) {
+            return (rect1.x < rect2.x + rect2.size + buffer &&
+                    rect1.x + rect1.size > rect2.x - buffer &&
+                    rect1.y < rect2.y + rect2.size + buffer &&
+                    rect1.y + rect1.size > rect2.y - buffer);
         }
 
         function update() {
-            if (isModalOpen) return; // Pause movement if modal is open
+            if (isModalOpen) return;
 
-            // Movement
+            // Keyboard Movement
             if (keys['w'] || keys['arrowup']) player.y -= player.speed;
             if (keys['s'] || keys['arrowdown']) player.y += player.speed;
             if (keys['a'] || keys['arrowleft']) player.x -= player.speed;
             if (keys['d'] || keys['arrowright']) player.x += player.speed;
 
-            // Canvas Boundaries
-            if (player.x < 0) player.x = 0;
-            if (player.y < 0) player.y = 0;
-            if (player.x + player.size > canvas.width) player.x = canvas.width - player.size;
-            if (player.y + player.size > canvas.height) player.y = canvas.height - player.size;
+            // Tap-to-Move Movement (Smooth follow)
+            if (player.targetX !== null && player.targetY !== null) {
+                const dx = player.targetX - player.x;
+                const dy = player.targetY - player.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > player.speed) {
+                    player.x += (dx / distance) * player.speed;
+                    player.y += (dy / distance) * player.speed;
+                } else {
+                    // Arrived at target
+                    player.x = player.targetX;
+                    player.y = player.targetY;
+                    player.targetX = null; 
+                    player.targetY = null;
+                }
+            }
+
+            // Boundaries
+            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
 
             // Interaction Check
             currentInteractable = null;
             for (let obj of objects) {
-                // expand hit box slightly for easier interaction
-                let interactionZone = { x: obj.x - 10, y: obj.y - 10, size: obj.size + 20 };
-                if (checkCollision(player, interactionZone)) {
+                // Use a larger buffer for mobile auto-interaction
+                let buffer = isMobile ? 20 : 10; 
+                if (checkCollision(player, obj, buffer)) {
                     currentInteractable = obj;
+                    // Auto-open on mobile tap arrival
+                    if(isMobile && player.targetX === null) {
+                         openModal(obj.text);
+                         currentInteractable = null; // prevent double trigger
+                    }
                     break;
                 }
             }
         }
 
         function draw() {
-            // Clear Canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw Objects
+            // Draw Objects (Emojis)
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
             for (let obj of objects) {
-                ctx.fillStyle = obj.color;
-                ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+                // Draw Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.beginPath();
+                ctx.ellipse(obj.x + obj.size/2, obj.y + obj.size/1.8, obj.size/2, obj.size/4, 0, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Draw Emoji
+                ctx.font = `${obj.size}px Arial`;
+                ctx.fillText(obj.emoji, obj.x + obj.size/2, obj.y + obj.size/2);
                 
                 // Draw Label
-                ctx.fillStyle = '#fff';
-                ctx.font = '14px Courier New';
-                ctx.textAlign = 'center';
-                ctx.fillText(obj.label, obj.x + obj.size/2, obj.y - 10);
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = '14px Segoe UI';
+                ctx.fillText(obj.label, obj.x + obj.size/2, obj.y - 15);
 
-                // Highlight if player is near
-                if (currentInteractable === obj) {
-                    ctx.strokeStyle = '#2ecc71';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(obj.x - 5, obj.y - 5, obj.size + 10, obj.size + 10);
-                    ctx.fillStyle = '#2ecc71';
-                    ctx.fillText('[SPASI]', obj.x + obj.size/2, obj.y + obj.size + 20);
+                // Highlight/Interaction Prompt
+                if (currentInteractable === obj && !isModalOpen) {
+                     ctx.strokeStyle = '#2ecc71';
+                     ctx.lineWidth = 3;
+                     ctx.beginPath();
+                     ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size * 0.8, 0, Math.PI*2);
+                     ctx.stroke();
+                     
+                     if(!isMobile) {
+                        ctx.fillStyle = '#2ecc71';
+                        ctx.font = 'bold 16px Segoe UI';
+                        ctx.fillText('[TEKAN SPASI]', obj.x + obj.size/2, obj.y + obj.size + 25);
+                     }
                 }
             }
 
-            // Draw Player
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.size, player.size);
+            // Draw Player (Wizard Emoji)
+            ctx.font = `${player.size}px Arial`;
+            // Small shadow for player
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+             ctx.beginPath();
+            ctx.ellipse(player.x + player.size/2, player.y + player.size/1.8, player.size/2.2, player.size/5, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillText(player.emoji, player.x + player.size/2, player.y + player.size/2);
         }
 
         function gameLoop() {
@@ -240,8 +358,7 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Start Game
-        gameLoop();
+        gameLoop(); // Start
     </script>
 </body>
 </html>
