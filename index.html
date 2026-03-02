@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>M. Adriyansah - IT Support Portfolio</title>
+    <title>M. Adriyansah - Portfolio</title>
     <style>
         :root {
-            --primary: #2ecc71;
-            --bg: #0f0f0f;
-            --text: #fff;
+            --primary: #00ff88; /* Hijau Neon lebih terang */
+            --bg: #050505;      /* Hitam pekat */
+            --text: #ffffff;
         }
         body {
             margin: 0;
-            overflow: hidden; /* Mencegah scroll browser */
+            overflow: hidden;
             background-color: var(--bg);
             font-family: 'Segoe UI', sans-serif;
-            touch-action: none; /* Mencegah zoom sentuh */
+            touch-action: none;
         }
         
         /* Modal Pop-up */
@@ -23,68 +23,74 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            background: rgba(15, 15, 15, 0.95);
-            border: 1px solid var(--primary);
-            padding: 20px;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: rgba(10, 20, 10, 0.95); /* Sedikit kehijauan */
+            border: 2px solid var(--primary);
+            padding: 25px;
             width: 85%;
             max-width: 400px;
-            max-height: 80vh; /* Agar tidak kepanjangan di HP */
+            max-height: 80vh;
             overflow-y: auto;
-            border-radius: 12px;
-            box-shadow: 0 0 30px rgba(46, 204, 113, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.3);
             display: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 99;
+            z-index: 100;
             color: var(--text);
         }
         #ui-modal.active {
             display: block;
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
         
-        /* Typography di dalam Modal */
-        h2 { color: var(--primary); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.2rem; }
-        p, li { font-size: 0.9rem; line-height: 1.5; color: #ddd; }
+        /* Typography Modal */
+        h2 { color: var(--primary); margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 1.4rem; text-shadow: 0 0 10px rgba(0,255,136,0.3); }
+        p, li { font-size: 0.95rem; line-height: 1.6; color: #eee; }
         .highlight { color: var(--primary); font-weight: bold; }
         
         /* Tombol & Link */
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: var(--primary);
             border: none;
             font-weight: bold;
+            font-size: 1rem;
             color: #000;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,255,136,0.4);
         }
         .wa-btn {
             display: block;
-            background: transparent;
-            border: 1px solid #25D366;
+            background: rgba(37, 211, 102, 0.1);
+            border: 2px solid #25D366;
             color: #25D366;
             text-align: center;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
         }
         
-        /* Instruksi di Bawah */
+        /* Instruksi Bawah */
         #instruct {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             width: 100%;
             text-align: center;
-            color: rgba(255,255,255,0.5);
-            font-size: 0.8rem;
+            color: var(--primary);
+            font-size: 0.9rem;
             pointer-events: none;
+            font-weight: bold;
             text-shadow: 0 2px 4px #000;
+            background: linear-gradient(to top, #000 0%, transparent 100%);
+            padding-bottom: 10px;
         }
     </style>
 </head>
@@ -98,7 +104,7 @@
     </div>
 
     <div id="instruct">
-        Tap layar untuk bergerak • Tabrak ikon untuk info
+        TAP LAYAR UNTUK BERGERAK
     </div>
 
     <script>
@@ -136,12 +142,11 @@
                       </a>`
         };
 
-        // --- SETUP GAME ---
-        let player = { x: 0, y: 0, size: 30, color: '#3498db', tx: null, ty: null };
+        let player = { x: 0, y: 0, size: 40, tx: null, ty: null };
         let objects = [];
         let modalOpen = false;
+        let tapEffect = { x: 0, y: 0, active: false, radius: 0 };
 
-        // Fungsi inisialisasi ukuran layar
         function resize() {
             width = window.innerWidth;
             height = window.innerHeight;
@@ -149,134 +154,170 @@
             canvas.height = height;
             isMobile = width < 600;
 
-            // Reset Posisi Player ke Tengah Aman
             player.x = width / 2;
             player.y = height / 2;
 
-            // Susun Ulang Objek Berdasarkan Layar
             objects = [
-                { id: 'profile', emoji: '📋', label: 'Profil', text: data.profile },
-                { id: 'exp', emoji: '💼', label: 'Kerja', text: data.exp },
-                { id: 'edu', emoji: '🎓', label: 'Studi', text: data.edu },
-                { id: 'contact', emoji: '📞', label: 'Kontak', text: data.contact }
+                { id: 'profile', emoji: '📋', label: 'PROFIL', text: data.profile },
+                { id: 'exp', emoji: '💼', label: 'KERJA', text: data.exp },
+                { id: 'edu', emoji: '🎓', label: 'STUDI', text: data.edu },
+                { id: 'contact', emoji: '📞', label: 'KONTAK', text: data.contact }
             ];
 
-            // LOGIKA POSISI (Agar tidak numpuk di HP)
             let cx = width / 2;
             let cy = height / 2;
-            let spread = isMobile ? Math.min(width, height) / 2.5 : 200;
+            // Jarak antar ikon diatur agar pas di layar HP
+            let spreadY = isMobile ? height / 3.5 : 150; 
+            let spreadX = isMobile ? width / 2.5 : 250;
 
             if (isMobile) {
-                // Posisi Vertikal (Atas, Bawah, Kiri Sedikit, Kanan Sedikit)
-                objects[0].x = cx;          objects[0].y = cy - spread; // Profil (Atas)
-                objects[1].x = cx + spread/1.5; objects[1].y = cy;          // Kerja (Kanan)
-                objects[2].x = cx - spread/1.5; objects[2].y = cy;          // Studi (Kiri)
-                objects[3].x = cx;          objects[3].y = cy + spread; // Kontak (Bawah)
+                // Layout Diamond Vertikal untuk HP
+                objects[0].x = cx;          objects[0].y = cy - spreadY; // Atas
+                objects[1].x = cx + spreadX; objects[1].y = cy;          // Kanan
+                objects[2].x = cx - spreadX; objects[2].y = cy;          // Kiri
+                objects[3].x = cx;          objects[3].y = cy + spreadY; // Bawah
             } else {
-                // Posisi Landscape (Menyebar Horizontal)
-                objects[0].x = cx - spread; objects[0].y = cy - 50;
-                objects[1].x = cx + spread; objects[1].y = cy - 50;
-                objects[2].x = cx - spread/2; objects[2].y = cy + 100;
-                objects[3].x = cx + spread/2; objects[3].y = cy + 100;
+                objects[0].x = cx - 200; objects[0].y = cy - 100;
+                objects[1].x = cx + 200; objects[1].y = cy - 100;
+                objects[2].x = cx - 200; objects[2].y = cy + 100;
+                objects[3].x = cx + 200; objects[3].y = cy + 100;
             }
         }
 
         window.addEventListener('resize', resize);
-        resize(); // Jalankan saat awal load
+        resize();
 
         // --- INPUT ---
-        // Mouse / Touch
         canvas.addEventListener('pointerdown', e => {
             if (modalOpen) return;
             player.tx = e.clientX;
             player.ty = e.clientY;
+            
+            // Efek Tap Visual
+            tapEffect.x = e.clientX;
+            tapEffect.y = e.clientY;
+            tapEffect.radius = 0;
+            tapEffect.active = true;
         });
 
-        function closeModal() {
+        window.closeModal = function() {
             modal.classList.remove('active');
             modalOpen = false;
-            // Geser player sedikit biar gak langsung kebuka lagi
-            player.tx = width/2;
+            player.tx = width/2; // Reset ke tengah biar aman
             player.ty = height/2;
         }
-        window.closeModal = closeModal;
 
-        // --- LOOP GAME ---
         function loop() {
-            // Background Grid (Supaya tidak gelap gulita)
-            ctx.fillStyle = '#0f0f0f';
+            // Background Hitam
+            ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, width, height);
             
-            // Gambar Garis-garis Cyber
-            ctx.strokeStyle = 'rgba(46, 204, 113, 0.1)';
+            // GRID Latar (Dibuat lebih halus opacity-nya)
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.15)'; 
             ctx.lineWidth = 1;
             ctx.beginPath();
-            for (let i = 0; i < width; i += 50) { ctx.moveTo(i, 0); ctx.lineTo(i, height); }
-            for (let j = 0; j < height; j += 50) { ctx.moveTo(0, j); ctx.lineTo(width, j); }
+            let gridSize = 40;
+            for (let i = 0; i < width; i += gridSize) { ctx.moveTo(i, 0); ctx.lineTo(i, height); }
+            for (let j = 0; j < height; j += gridSize) { ctx.moveTo(0, j); ctx.lineTo(width, j); }
             ctx.stroke();
 
+            // Efek Tap (Lingkaran menyebar)
+            if (tapEffect.active) {
+                ctx.strokeStyle = 'rgba(0, 255, 136, ' + (1 - tapEffect.radius/30) + ')';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(tapEffect.x, tapEffect.y, tapEffect.radius, 0, Math.PI*2);
+                ctx.stroke();
+                tapEffect.radius += 1.5;
+                if (tapEffect.radius > 30) tapEffect.active = false;
+            }
+
             if (!modalOpen) {
-                // Pergerakan Player (Smooth)
                 if (player.tx !== null) {
                     let dx = player.tx - player.x;
                     let dy = player.ty - player.y;
                     let dist = Math.sqrt(dx*dx + dy*dy);
                     
                     if (dist > 5) {
-                        player.x += (dx/dist) * 5; // Kecepatan 5
-                        player.y += (dy/dist) * 5;
+                        player.x += (dx/dist) * 6;
+                        player.y += (dy/dist) * 6;
                     } else {
-                        player.tx = null; // Sampai
+                        player.tx = null;
                     }
                 }
 
-                // Cek Tabrakan
                 for (let obj of objects) {
                     let dist = Math.hypot(player.x - obj.x, player.y - obj.y);
-                    // Gambar koneksi garis jika dekat
+                    
+                    // Garis penghubung jika dekat
                     if (dist < 100) {
-                        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                        ctx.strokeStyle = 'rgba(0, 255, 136, 0.5)';
+                        ctx.lineWidth = 2;
                         ctx.beginPath(); ctx.moveTo(player.x, player.y); ctx.lineTo(obj.x, obj.y); ctx.stroke();
                     }
-                    // Buka Modal jika sangat dekat
-                    if (dist < 40) {
+                    
+                    if (dist < 45) {
                         content.innerHTML = obj.text;
                         modal.classList.add('active');
                         modalOpen = true;
-                        player.tx = null; // Stop jalan
+                        player.tx = null;
                     }
                 }
             }
 
-            // Gambar Objek (Emoji)
+            // --- GAMBAR OBJEK (PERBAIKAN VISUAL) ---
             ctx.textAlign = 'center'; 
             ctx.textBaseline = 'middle';
-            ctx.font = '30px Arial';
             
             for (let obj of objects) {
-                // Lingkaran di belakang ikon
-                ctx.fillStyle = 'rgba(255,255,255,0.05)';
-                ctx.beginPath(); ctx.arc(obj.x, obj.y, 30, 0, Math.PI*2); ctx.fill();
-                // Emoji
-                ctx.fillText(obj.emoji, obj.x, obj.y);
-                // Label text
-                ctx.fillStyle = '#aaa';
-                ctx.font = '12px Arial';
-                ctx.fillText(obj.label, obj.x, obj.y + 40);
-                ctx.font = '30px Arial'; // Balikin font
+                // 1. Lingkaran Luar (Glow Neon)
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ff88';
+                ctx.strokeStyle = '#00ff88';
+                ctx.fillStyle = 'rgba(0, 20, 10, 0.8)'; // Isi gelap agar teks pop
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath(); 
+                ctx.arc(obj.x, obj.y, 35, 0, Math.PI*2); 
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.shadowBlur = 0; // Reset shadow
+
+                // 2. Emoji
+                ctx.font = '32px Arial';
+                ctx.fillText(obj.emoji, obj.x, obj.y + 2);
+
+                // 3. Label (Teks Putih Tebal & Background Label)
+                ctx.font = 'bold 14px Segoe UI';
+                ctx.fillStyle = '#ffffff'; 
+                // Sedikit shadow hitam di teks biar makin jelas
+                ctx.shadowColor="black";
+                ctx.shadowBlur=4;
+                ctx.fillText(obj.label, obj.x, obj.y + 55);
+                ctx.shadowBlur=0;
             }
 
-            // Gambar Player (🧙‍♂️)
+            // --- GAMBAR PLAYER ---
+            // Aura Player
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#3498db';
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
+            ctx.beginPath(); ctx.arc(player.x, player.y, 25, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Ikon Player
+            ctx.font = '40px Arial';
             ctx.fillText('🧙‍♂️', player.x, player.y);
-            // Nama Player di atas kepala
-            ctx.fillStyle = '#2ecc71';
-            ctx.font = 'bold 12px Arial';
-            ctx.fillText('Adriyan', player.x, player.y - 25);
+            
+            // Nama Player
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 14px Segoe UI';
+            ctx.fillText('Adriyan', player.x, player.y - 30);
 
             requestAnimationFrame(loop);
         }
         loop();
-
     </script>
 </body>
 </html>
